@@ -14,6 +14,105 @@ class AlignmentZone:
 
 
 @attr.s(repr=False, slots=True)
+class Rectangle:
+    x: float = attr.ib(default=0)
+    y: float = attr.ib(default=0)
+    _width: float = attr.ib(default=0)
+    _height: float = attr.ib(default=0)
+
+    def __attrs_post_init__(self):
+        if (_width < 0):
+            raise ValueError(f"width cannot be negative ('{_width}')")
+        if (_height < 0):
+            raise ValueError(f"height cannot be negative ('{_height}')")
+
+    @classmethod
+    def create_empty(cls):
+        return cls(
+            x=float("inf"),
+            y=float("inf"),
+            width=float("-inf"),
+            height=float("-inf"),
+        )
+
+    @classmethod
+    def from_points(cls, x1, y1, x2, y2):
+        x = min(x1, x2)
+        y = min(y1, y2)
+
+        return cls(
+            x=x,
+            y=y,
+            width=max(max(x1, x2) - x, 0),
+            height=max(max(y1, y2) - y, 0),
+        )
+
+    @property
+    def bottom(self):
+        return _y
+
+    @property
+    def empty(self):
+        return _width < 0
+
+    @property
+    def left(self):
+        return _x
+
+    @property
+    def height(self):
+        return _height
+
+    @height.setter
+    def height(self, value):
+        if (value < 0):
+            raise ValueError(f"height cannot be negative ('{value}')")
+        _height = value
+
+    @property
+    def right(self):
+        if (self.empty):
+            return float("-inf")
+        return _x + _width
+
+    @property
+    def top(self):
+        if (self.empty):
+            return float("-inf")
+        return _y + _height
+
+    @property
+    def width(self):
+        return _width
+
+    @width.setter
+    def width(self, value):
+        if (value < 0):
+            raise ValueError(f"width cannot be negative ('{value}')")
+        _width = value
+
+    def union(self, rectangle):
+        if (self.empty):
+            _x = rectangle.x
+            _y = rectangle.y
+            _width = rectangle.width
+            _height = rectangle.height
+        else:
+            left = min(self.left, rectangle.left)
+            bottom = min(self.bottom, rectangle.bottom)
+            right = max(self.right, rectangle.right)
+            top = max(self.top, rectangle.top)
+
+            _width = max(right - left, 0)
+            _height = max(top - bottom, 0)
+            _x = left
+            _y = bottom
+
+    def unionPt(self, x, y):
+        self.union(Rectangle(x, y))
+
+
+@attr.s(repr=False, slots=True)
 class Transformation:
     xScale: Union[int, float] = attr.ib(default=1)
     xyScale: Union[int, float] = attr.ib(default=0)
