@@ -2,7 +2,6 @@ import cattr
 from datetime import datetime
 from tfont.objects.anchor import Anchor
 from tfont.objects.component import Component
-from tfont.objects.feature import FeatureHeader
 from tfont.objects.font import Font
 from tfont.objects.glyph import Glyph
 from tfont.objects.layer import Layer
@@ -64,9 +63,6 @@ class UFOConverter(cattr.Converter):
             font.versionMinor = info.versionMinor
         if ufo.lib:
             font._extraData = ufo.lib
-        # features
-        if ufo.features:
-            font.featureHeaders.append(FeatureHeader("fea", ufo.features.text))
         # master
         master = font.selectedMaster
         if info.styleName:
@@ -153,7 +149,7 @@ class UFOConverter(cattr.Converter):
                 for a in g.anchors:
                     if not a.name:
                         continue
-                    anchors[a.name] = Anchor(a.x or 0, a.y or 0)
+                    anchors.append(Anchor(a.x or 0, a.y or 0, a.name))
                     # ufo color and identifier are skipped
                 # components
                 components = layer.components
@@ -194,7 +190,6 @@ class UFOConverter(cattr.Converter):
                         c["id"] = ident
                     path = self.structure(c, Path)
                     paths.append(path)
-                glyph._lastModified = None
         return font
 
     def save(self, font, path):
@@ -225,12 +220,13 @@ def ufo_glyph_order(ufo_font):
     glyph_order = ufo_font.glyphOrder
     if glyph_order:
         glyph_order_set = set(glyph_order)
+
         ufo_glyph_names = {glyph.name for glyph in ufo_font}
         if ufo_glyph_names.issubset(glyph_order_set):
             return glyph_order
-        else:
-            glyph_order_missing = ufo_glyph_names - glyph_order_set
-            glyph_order.extend(glyph_order_missing)
-            return glyph_order
-    else:
-        return [glyph.name for glyph in ufo_font]
+
+        glyph_order_missing = ufo_glyph_names - glyph_order_set
+        glyph_order.extend(glyph_order_missing)
+        return glyph_order
+
+    return [glyph.name for glyph in ufo_font]

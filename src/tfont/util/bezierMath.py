@@ -1,8 +1,6 @@
 from fontTools.misc import bezierTools
 import math
 
-# TODO remove fontTools dependency/inline some of these funcs
-
 
 def curveBounds(p0, p1, p2, p3):
     x0, x1, x2, x3 = p0.x, p1.x, p2.x, p3.x

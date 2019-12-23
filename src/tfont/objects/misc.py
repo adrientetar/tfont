@@ -1,6 +1,22 @@
 import attr
-from tfont.util.tracker import obj_setattr
+from tfont.util.observable import ChangeType, ObservableList
 from typing import Any, Iterable, Optional, Tuple, Union
+
+
+def observable_list(parent, items):
+    ol = ObservableList(items)
+
+    def change_handler(sender, args):
+        is_replace = args.action == ChangeType.REPLACE
+        if args.action == ChangeType.REMOVE or is_replace:
+            for item in args.oldItems:
+                item._parent = None
+        if args.action == ChangeType.ADD or is_replace:
+            for item in args.newItems:
+                item._parent = parent
+    ol.change_event.append(change_handler)
+
+    return ol
 
 
 @attr.s(slots=True)
@@ -21,19 +37,20 @@ class Rectangle:
     _height: float = attr.ib(default=0)
 
     def __attrs_post_init__(self):
-        if (_width < 0):
-            raise ValueError(f"width cannot be negative ('{_width}')")
-        if (_height < 0):
-            raise ValueError(f"height cannot be negative ('{_height}')")
+        if (self._width < 0):
+            raise ValueError(f"width cannot be negative ('{self._width}')")
+        if (self._height < 0):
+            raise ValueError(f"height cannot be negative ('{self._height}')")
 
     @classmethod
     def create_empty(cls):
-        return cls(
+        rectangle = cls(
             x=float("inf"),
             y=float("inf"),
-            width=float("-inf"),
-            height=float("-inf"),
         )
+        rectangle._width = float("-inf")
+        rectangle._height = float("-inf")
+        return rectangle
 
     @classmethod
     def from_points(cls, x1, y1, x2, y2):
@@ -49,64 +66,64 @@ class Rectangle:
 
     @property
     def bottom(self):
-        return _y
+        return self.y
 
     @property
     def empty(self):
-        return _width < 0
+        return self._width < 0
 
     @property
     def left(self):
-        return _x
+        return self.x
 
     @property
     def height(self):
-        return _height
+        return self._height
 
     @height.setter
     def height(self, value):
         if (value < 0):
             raise ValueError(f"height cannot be negative ('{value}')")
-        _height = value
+        self._height = value
 
     @property
     def right(self):
         if (self.empty):
             return float("-inf")
-        return _x + _width
+        return self.x + self._width
 
     @property
     def top(self):
         if (self.empty):
             return float("-inf")
-        return _y + _height
+        return self.y + self._height
 
     @property
     def width(self):
-        return _width
+        return self._width
 
     @width.setter
     def width(self, value):
         if (value < 0):
             raise ValueError(f"width cannot be negative ('{value}')")
-        _width = value
+        self._width = value
 
     def union(self, rectangle):
         if (self.empty):
-            _x = rectangle.x
-            _y = rectangle.y
-            _width = rectangle.width
-            _height = rectangle.height
+            self.x = rectangle.x
+            self.y = rectangle.y
+            self._width = rectangle.width
+            self._height = rectangle.height
         else:
             left = min(self.left, rectangle.left)
             bottom = min(self.bottom, rectangle.bottom)
             right = max(self.right, rectangle.right)
             top = max(self.top, rectangle.top)
 
-            _width = max(right - left, 0)
-            _height = max(top - bottom, 0)
-            _x = left
-            _y = bottom
+            self._width = max(right - left, 0)
+            self._height = max(top - bottom, 0)
+            self.x = left
+            self.y = bottom
 
     def unionPt(self, x, y):
         self.union(Rectangle(x, y))
@@ -137,20 +154,6 @@ class Transformation:
 
     def __repr__(self):
         return "%s(%r, %r, %r, %r, %r, %r)" % (self.__class__.__name__, *self)
-
-    def __setattr__(self, key, value):
-        try:
-            parent = self._parent
-        except AttributeError:
-            pass
-        else:
-            if parent is not None and key[0] != "_":
-                oldValue = getattr(self, key)
-                if value != oldValue:
-                    obj_setattr(self, key, value)
-                    parent.transformation = self
-                return
-        obj_setattr(self, key, value)
 
     def concat(self, other) -> None:
         if not other:

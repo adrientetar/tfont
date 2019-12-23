@@ -5,8 +5,3 @@ __pycache__/
 *.pyc
 .eggs/
 .*cache/
-.tox/
-.coverage
-.coverage.*
-htmlcov/
-src/tfont/_version.py

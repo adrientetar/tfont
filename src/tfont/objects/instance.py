@@ -35,3 +35,7 @@ class Instance:
                     pass
         name = f"{self.familyName} {self.styleName}".rstrip()
         return "%s(%r%s)" % (self.__class__.__name__, name, more)
+
+    @property
+    def parent(self):
+        return self._parent

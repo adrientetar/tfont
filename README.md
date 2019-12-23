@@ -1,8 +1,8 @@
-[![Travis CI Build Status](https://travis-ci.org/trufont/tfont.svg?branch=master)](https://travis-ci.org/trufont/tfont)
-
 tfont
 =====
 
-tfont is a font library that writes to JSON.
+A font object model that serializes to JSON & compiles to OpenType.
+
+🚧 Work in progress, do not use for production work!! 🚧
 
 ![](doc/tree.svg)

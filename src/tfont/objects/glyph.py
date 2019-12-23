@@ -1,7 +1,6 @@
 import attr
 from tfont.objects.layer import Layer
-from tfont.util.tracker import GlyphLayersList, obj_setattr
-from time import time
+from tfont.objects.misc import observable_list
 from typing import Any, Dict, List, Optional, Tuple
 
 
@@ -21,7 +20,6 @@ class Glyph:
     color: Optional[Tuple[int, int, int, int]] = attr.ib(default=None)
     _extraData: Optional[Dict] = attr.ib(default=None)
 
-    _lastModified: Optional[float] = attr.ib(default=None, init=False)
     _parent: Optional[Any] = attr.ib(default=None, init=False)
     selected: bool = attr.ib(default=False, init=False)
 
@@ -32,21 +30,6 @@ class Glyph:
     def __repr__(self):
         return "%s(%r, %d layers)" % (
             self.__class__.__name__, self.name, len(self._layers))
-
-    def __setattr__(self, key, value):
-        try:
-            font = self._parent
-        except AttributeError:
-            pass
-        else:
-            if font is not None and key[0] != "_" \
-                                and key != "selected":
-                oldValue = getattr(self, key)
-                if value != oldValue:
-                    obj_setattr(self, key, value)
-                    self._lastModified = time()
-                return
-        obj_setattr(self, key, value)
 
     @property
     def extraData(self):
@@ -60,12 +43,8 @@ class Glyph:
         return self._parent
 
     @property
-    def lastModified(self):
-        return self._lastModified
-
-    @property
     def layers(self):
-        return GlyphLayersList(self)
+        return observable_list(self, self._layers)
 
     @property
     def unicode(self):

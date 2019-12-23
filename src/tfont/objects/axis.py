@@ -1,5 +1,4 @@
 import attr
-from tfont.util.tracker import obj_setattr
 from typing import Optional
 
 
@@ -18,15 +17,6 @@ class Axis:
             self.__class__.__name__, self.tag, self.minimum, self.default,
             self.maximum)
 
-    def __setattr__(self, key, value):
-        try:
-            font = self._parent
-        except AttributeError:
-            pass
-        else:
-            if font is not None and key == "tag":
-                oldValue = getattr(self, key)
-                if value != oldValue:
-                    font.axes[value] = self
-                return
-        obj_setattr(self, key, value)
+    @property
+    def parent(self):
+        return self._parent

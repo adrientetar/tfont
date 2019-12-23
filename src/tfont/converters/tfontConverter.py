@@ -1,25 +1,14 @@
 import cattr
 from collections.abc import Collection
 from datetime import datetime
-from functools import partial
 import rapidjson as json
 from rapidjson import RawJSON, dumps
-from tfont.objects.anchor import Anchor
-from tfont.objects.axis import Axis
-from tfont.objects.feature import Feature, FeatureClass
 from tfont.objects.font import Font
 from tfont.objects.layer import Layer
-from tfont.objects.master import Master
 from tfont.objects.misc import AlignmentZone, Transformation
 from tfont.objects.path import Path
 from tfont.objects.point import Point
-from typing import Dict, Union
-
-
-# TODO we should have a custom type for caching dicts
-def _structure_seq_dict(self, attr, data, type_):
-    cls = type_.__args__[1]  # dict key type
-    return dict((e[attr], self.structure(e, cls)) for e in data)
+from typing import Union
 
 
 def _structure_Path(data, cls):
@@ -119,33 +108,12 @@ class TFontConverter(cattr.Converter):
         self.register_structure_hook(Transformation, structure_seq)
         self.register_unstructure_hook(Transformation, unstructure_seq)
 
-        unstructure_seq_dict = lambda d: list(
-            self.unstructure(v) for v in d.values())
-        structure_dict_name = partial(_structure_seq_dict, self, "name")
-        structure_dict_tag = partial(_structure_seq_dict, self, "tag")
-        # Anchor
-        self.register_structure_hook(Dict[str, Anchor], structure_dict_name)
-        self.register_unstructure_hook(Dict[str, Anchor], unstructure_seq_dict)
-        # Axis
-        self.register_structure_hook(Dict[str, Axis], structure_dict_tag)
-        self.register_unstructure_hook(Dict[str, Axis], unstructure_seq_dict)
-        # Feature
-        self.register_structure_hook(Dict[str, Feature], structure_dict_tag)
-        self.register_unstructure_hook(
-            Dict[str, Feature], unstructure_seq_dict)
-        # FeatureClass
-        self.register_structure_hook(
-            Dict[str, FeatureClass], structure_dict_name)
-        self.register_unstructure_hook(
-            Dict[str, FeatureClass], unstructure_seq_dict)
-        # Master
-        self.register_structure_hook(Dict[str, Master], structure_dict_name)
-        self.register_unstructure_hook(Dict[str, Master], unstructure_seq_dict)
 
     def open(self, path, font=None):
         with open(path, 'r') as file:
             d = json.load(file)
-        assert self.version >= d.pop(".formatVersion")
+        # XXX: default to 0 for now because Fonte doesn't add this attr
+        assert self.version >= d.pop(".formatVersion", 0)
         if font is not None:
             self._font = font
         return self.structure(d, Font)
@@ -192,7 +160,6 @@ class TFontConverter(cattr.Converter):
             rv = {".formatVersion": self.version}
         else:
             rv = {}
-        override = cls is Font or cls is Layer
         for a in attrs:
             # skip internal attrs
             if not a.init:
@@ -206,17 +173,8 @@ class TFontConverter(cattr.Converter):
                 # skip empty collections
                 if isinstance(v, Collection):
                     continue
-            # force our specialized types overrides
-            type_ = v.__class__
-            if override:
-                t = a.type
-                try:
-                    if issubclass(t.__origin__, dict) and t.__args__[0] is str:
-                        type_ = t
-                except (AttributeError, TypeError):
-                    pass
             # remove underscore from private attrs
             if name[0] == "_":
                 name = name[1:]
-            rv[name] = dispatch(type_)(v)
+            rv[name] = dispatch(v.__class__)(v)
         return rv

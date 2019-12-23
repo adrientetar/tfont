@@ -1,7 +1,6 @@
 import attr
 from tfont.objects.guideline import Guideline
-from tfont.objects.misc import AlignmentZone
-from tfont.util.tracker import MasterGuidelinesList, obj_setattr
+from tfont.objects.misc import AlignmentZone, observable_list
 from typing import Any, Dict, List, Optional
 
 
@@ -25,7 +24,6 @@ class Master:
     vKerning: Dict[str, Dict[str, int]] = attr.ib(default=attr.Factory(dict))
 
     _parent: Optional[Any] = attr.ib(default=None, init=False)
-    visible: bool = attr.ib(default=False, init=False)
 
     def __repr__(self):
         more = ""
@@ -40,26 +38,13 @@ class Master:
                     pass
         return "%s(%r%s)" % (self.__class__.__name__, self.name, more)
 
-    def __setattr__(self, key, value):
-        try:
-            font = self._parent
-        except AttributeError:
-            pass
-        else:
-            if font is not None and key == "name":
-                oldValue = getattr(self, key)
-                if value != oldValue:
-                    font.masters[value] = self
-                return
-        obj_setattr(self, key, value)
-
-    @property
-    def font(self):
-        return self._parent
-
     @property
     def guidelines(self):
-        return MasterGuidelinesList(self)
+        return observable_list(self, self._guidelines)
+
+    @property
+    def parent(self):
+        return self._parent
 
 
-fontMasterDict = lambda: {"Regular": Master(name="Regular")}
+fontMasterList = lambda: [Master(name="Regular")]
