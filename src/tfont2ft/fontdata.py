@@ -89,7 +89,7 @@ class FontData:
                 f"Minor version has too many digits and won't fit into the "
                 f"head table fontRevision field; rounded to {actualVersionMinor}."
             )
-        return float(f"{font.versionMajor}.{actualVersionMinor}")
+        return f"{font.versionMajor}.{actualVersionMinor}"
 
     ##
 
@@ -178,13 +178,9 @@ class FontData:
 
     @classmethod
     def CFF_postscriptWeightName(cls, ctx):
-        return None
-    
-    @classmethod
-    def CFF_version(cls, ctx):
-        version = cls.version(ctx)
+        preferredStyleName = cls.name_preferredStyleName(ctx)
 
-        return str(version)
+        return preferredStyleName
 
     @classmethod
     def descender(cls, ctx):
@@ -225,6 +221,12 @@ class FontData:
     @classmethod
     def hhea_metrics(cls, ctx):
         return cls.OS2_typoMetrics(ctx)
+
+    @classmethod
+    def head_version(cls, ctx):
+        version = cls.version(ctx)
+
+        return float(version)
 
     @classmethod
     def italicAngle(cls, ctx):
@@ -399,7 +401,7 @@ class FontData:
 
     @classmethod
     def OS2_vendorID(cls, ctx):
-        return "NONE"
+        return "UKWN"
 
     @classmethod
     def OS2_weightClass(cls, ctx):

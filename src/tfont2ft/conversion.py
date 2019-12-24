@@ -26,7 +26,7 @@ def to_bitflags(indices, start, length):
     value = 0
     for ix in indices:
         if start <= ix < end:
-            value |= ix
+            value |= 1 << ix
     return value
 
 

@@ -115,7 +115,7 @@ class BaseFontCompiler:
         head.tableVersion = 1.0
         head.magicNumber = 0x5F0F3CF5
 
-        head.fontRevision = data.version(ctx)
+        head.fontRevision = data.head_version(ctx)
         head.unitsPerEm = otRound(data.unitsPerEm(ctx))
 
         head.created = conversion.to_opentype_timestamp(data.date(ctx))
@@ -398,7 +398,7 @@ class Type2FontCompiler(BaseFontCompiler):
         cff.fontNames.append(
             data.name_postscriptFontName(ctx))
         topDict = cff.topDictIndex[0]
-        topDict.version = data.CFF_version(ctx)
+        topDict.version = data.version(ctx)
         topDict.Notice = conversion.to_postscript_string(
             data.name_trademark(ctx),
             # TBH, logging should just be about semantic kv pairs
@@ -428,12 +428,9 @@ class Type2FontCompiler(BaseFontCompiler):
         topDict.UnderlineThickness = otRound(
             data.post_underlineThickness(ctx))
 
-        unitsPerEm = data.unitsPerEm(ctx)
+        scale = 1.0 / otRound(data.unitsPerEm(ctx))
         topDict.FontMatrix = [
-            otRound(1.0 / unitsPerEm),
-            0, 0,
-            otRound(1.0 / unitsPerEm),
-            0, 0]
+            scale, 0, 0, scale, 0, 0]
 
         defaultWidthX, nominalWidthX = FontProc.postscript_width_stats(ctx, self.otf)
         if defaultWidthX:
