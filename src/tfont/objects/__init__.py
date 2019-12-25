@@ -7,6 +7,6 @@ from tfont.objects.guideline import Guideline
 from tfont.objects.instance import Instance
 from tfont.objects.layer import Layer
 from tfont.objects.master import Master
-from tfont.objects.misc import AlignmentZone, Transformation
+from tfont.objects.misc import AlignmentZone, Matrix3x2
 from tfont.objects.path import Path
 from tfont.objects.point import Point

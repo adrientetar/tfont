@@ -5,11 +5,11 @@ from tfont.objects.point import Point
 from typing import Any, Dict, List, Optional
 
 
-@attr.s(cmp=False, repr=False, slots=True)
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
 class Path:
-    _points: List[Point] = attr.ib(default=attr.Factory(list))
+    _points: List[Point] = attr.Factory(list)
 
-    _extraData: Optional[Dict] = attr.ib(default=None)
+    _extraData: Optional[Dict] = None
 
     _parent: Optional[Any] = attr.ib(default=None, init=False)
 
@@ -41,3 +41,9 @@ class Path:
     @property
     def points(self):
         return observable_list(self, self._points)
+
+    def transform(self, matrix, selectionOnly=False):
+        for point in self._points:
+            if not selectionOnly or point.selected:
+                point.x, \
+                point.y = matrix.transform(point.x, point.y)

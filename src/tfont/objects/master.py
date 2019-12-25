@@ -4,24 +4,24 @@ from tfont.objects.misc import AlignmentZone, observable_list
 from typing import Any, Dict, List, Optional
 
 
-@attr.s(cmp=False, repr=False, slots=True)
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
 class Master:
-    name: str = attr.ib(default="")
-    location: Dict[str, int] = attr.ib(default=attr.Factory(dict))
+    name: str
+    location: Dict[str, int] = attr.Factory(dict)
 
-    alignmentZones: List[AlignmentZone] = attr.ib(default=attr.Factory(list))
-    hStems: List[int] = attr.ib(default=attr.Factory(list))
-    vStems: List[int] = attr.ib(default=attr.Factory(list))
+    alignmentZones: List[AlignmentZone] = attr.Factory(list)
+    hStems: List[int] = attr.Factory(list)
+    vStems: List[int] = attr.Factory(list)
 
-    ascender: int = attr.ib(default=800)
-    capHeight: int = attr.ib(default=700)
-    descender: int = attr.ib(default=-200)
-    italicAngle: float = attr.ib(default=0.)
-    xHeight: int = attr.ib(default=500)
+    ascender: int = 800
+    capHeight: int = 700
+    descender: int = -200
+    italicAngle: float = 0.
+    xHeight: int = 500
 
-    _guidelines: List[Guideline] = attr.ib(default=attr.Factory(list))
-    hKerning: Dict[str, Dict[str, int]] = attr.ib(default=attr.Factory(dict))
-    vKerning: Dict[str, Dict[str, int]] = attr.ib(default=attr.Factory(dict))
+    _guidelines: List[Guideline] = attr.Factory(list)
+    hKerning: Dict[str, Dict[str, int]] = attr.Factory(dict)
+    vKerning: Dict[str, Dict[str, int]] = attr.Factory(dict)
 
     _parent: Optional[Any] = attr.ib(default=None, init=False)
 
@@ -30,12 +30,9 @@ class Master:
         font = self._parent
         if font is not None:
             loc = self.location
-            axes = font.axes
             for tag in ("wght", "wdth"):
-                try:
-                    more += ", %s=%r" % (tag, loc.get(tag, axes[tag]))
-                except KeyError:
-                    pass
+                axis = font.axisForTag(tag)
+                more += ", %s=%r" % (tag, loc.get(tag, axis))
         return "%s(%r%s)" % (self.__class__.__name__, self.name, more)
 
     @property

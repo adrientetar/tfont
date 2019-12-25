@@ -1,13 +1,13 @@
 import attr
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 
-@attr.s(cmp=False, repr=False, slots=True)
-class Guideline(object):
-    x: Union[int, float] = attr.ib()
-    y: Union[int, float] = attr.ib()
-    angle: Union[int, float] = attr.ib()
-    name: str = attr.ib(default="")
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
+class Guideline:
+    x: float
+    y: float
+    angle: float
+    name: str = ""
 
     _parent: Optional[Any] = attr.ib(default=None, init=False)
     selected: bool = attr.ib(default=False, init=False)

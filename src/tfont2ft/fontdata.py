@@ -178,15 +178,26 @@ class FontData:
 
     @classmethod
     def CFF_postscriptWeightName(cls, ctx):
-        preferredStyleName = cls.name_preferredStyleName(ctx)
+        preferredSubfamilyName = cls.name_preferredSubfamilyName(ctx)
 
-        return preferredStyleName
+        return preferredSubfamilyName
 
     @classmethod
     def descender(cls, ctx):
         master = ctx.master
 
         return master.descender
+
+    @classmethod
+    def head_macStyle(cls, ctx):
+        styleMapName = cls.stylemap_styleName(ctx)
+
+        macStyle = 0
+        if styleMapName.startswith("bold"):
+            macStyle |= 1 << 0
+        if styleMapName.endswith("italic"):
+            macStyle |= 1 << 1
+        return macStyle
 
     @classmethod
     def hhea_caretMetrics(cls, ctx):
@@ -206,17 +217,6 @@ class FontData:
             caretSlopeRun,
             0
         )
-
-    @classmethod
-    def head_macStyle(cls, ctx):
-        styleMapName = cls.stylemap_styleName(ctx)
-
-        macStyle = 0
-        if styleMapName.startswith("bold"):
-            macStyle |= 1 << 0
-        if styleMapName.endswith("italic"):
-            macStyle |= 1 << 1
-        return macStyle
 
     @classmethod
     def hhea_metrics(cls, ctx):
@@ -722,5 +722,5 @@ class FontProc:
             ]))
 
         return Glyph(".notdef", layers=[
-            Layer(masterName=font.masters[0], paths=paths)
+            Layer(masterName=ctx.master.name, paths=paths)
         ])

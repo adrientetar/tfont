@@ -8,26 +8,26 @@ from tfont.objects.misc import observable_list
 from typing import Dict, List, Optional
 
 
-@attr.s(cmp=False, repr=False, slots=True)
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
 class Font:
-    date: datetime = attr.ib(default=attr.Factory(datetime.utcnow))
-    familyName: str = attr.ib(default="New Font")
+    date: datetime = attr.Factory(datetime.utcnow)
+    familyName: str = "New Font"
 
-    _axes: List[Axis] = attr.ib(default=attr.Factory(list))
-    _glyphs: List[Glyph] = attr.ib(default=attr.Factory(list))
-    _masters: List[Master] = attr.ib(default=attr.Factory(fontMasterList))
-    _instances: List[Instance] = attr.ib(default=attr.Factory(list))
+    _axes: List[Axis] = attr.Factory(list)
+    _glyphs: List[Glyph] = attr.Factory(list)
+    _masters: List[Master] = attr.Factory(fontMasterList)
+    _instances: List[Instance] = attr.Factory(list)
 
-    copyright: str = attr.ib(default="")
-    designer: str = attr.ib(default="")
-    designerURL: str = attr.ib(default="")
-    manufacturer: str = attr.ib(default="")
-    manufacturerURL: str = attr.ib(default="")
-    unitsPerEm: int = attr.ib(default=1000)
-    versionMajor: int = attr.ib(default=1)
-    versionMinor: int = attr.ib(default=0)
+    copyright: str = ""
+    designer: str = ""
+    designerURL: str = ""
+    manufacturer: str = ""
+    manufacturerURL: str = ""
+    unitsPerEm: int = 1000
+    versionMajor: int = 1
+    versionMinor: int = 0
 
-    _extraData: Optional[Dict] = attr.ib(default=None)
+    _extraData: Optional[Dict] = None
 
     _selectedMaster: Optional[int] = attr.ib(default=None, init=False)
 
@@ -80,9 +80,14 @@ class Font:
     def selectedMaster(self):
         try:
             return self._masters[self._selectedMaster]
-        except KeyError:
+        except (KeyError, TypeError):
             self._selectedMaster = 0
             return self._masters[0]
+
+    def axisForTag(self, tag):
+        for axis in self._axes:
+            if axis.name == tag:
+                return axis
 
     def glyphForName(self, name):
         for glyph in self._glyphs:

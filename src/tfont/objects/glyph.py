@@ -4,21 +4,21 @@ from tfont.objects.misc import observable_list
 from typing import Any, Dict, List, Optional, Tuple
 
 
-@attr.s(cmp=False, repr=False, slots=True)
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
 class Glyph:
-    name: str = attr.ib()
-    unicodes: List[str] = attr.ib(default=attr.Factory(list))
+    name: str
+    unicodes: List[str] = attr.Factory(list)
 
-    leftKerningGroup: str = attr.ib(default="")
-    rightKerningGroup: str = attr.ib(default="")
-    bottomKerningGroup: str = attr.ib(default="")
-    topKerningGroup: str = attr.ib(default="")
+    leftKerningGroup: str = ""
+    rightKerningGroup: str = ""
+    bottomKerningGroup: str = ""
+    topKerningGroup: str = ""
 
-    _layers: List[Layer] = attr.ib(default=attr.Factory(list))
+    _layers: List[Layer] = attr.Factory(list)
 
     # Color format: RGBA8888.
-    color: Optional[Tuple[int, int, int, int]] = attr.ib(default=None)
-    _extraData: Optional[Dict] = attr.ib(default=None)
+    color: Optional[Tuple[int, int, int, int]] = None
+    _extraData: Optional[Dict] = None
 
     _parent: Optional[Any] = attr.ib(default=None, init=False)
     selected: bool = attr.ib(default=False, init=False)

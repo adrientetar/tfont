@@ -5,7 +5,7 @@ import rapidjson as json
 from rapidjson import RawJSON, dumps
 from tfont.objects.font import Font
 from tfont.objects.layer import Layer
-from tfont.objects.misc import AlignmentZone, Transformation
+from tfont.objects.misc import AlignmentZone, Matrix3x2
 from tfont.objects.path import Path
 from tfont.objects.point import Point
 from typing import Union
@@ -98,15 +98,15 @@ class TFontConverter(cattr.Converter):
         # Alignment zone
         self.register_structure_hook(AlignmentZone, structure_seq)
         self.register_unstructure_hook(AlignmentZone, unstructure_seq)
+        # Matrix3x2
+        self.register_structure_hook(Matrix3x2, structure_seq)
+        self.register_unstructure_hook(Matrix3x2, unstructure_seq)
         # Path
         self.register_structure_hook(Path, _structure_Path)
         if indent is None:
             self.register_unstructure_hook(Path, _unstructure_Path_base)
         else:
             self.register_unstructure_hook(Path, _unstructure_Path)
-        # Transformation
-        self.register_structure_hook(Transformation, structure_seq)
-        self.register_unstructure_hook(Transformation, unstructure_seq)
 
 
     def open(self, path, font=None):

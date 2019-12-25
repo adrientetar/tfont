@@ -1,15 +1,14 @@
 import attr
-from tfont.objects.misc import Transformation
-from typing import Optional
+from tfont.objects.misc import Matrix3x2
+from typing import Any, Optional
 
 
-@attr.s(cmp=False, repr=False, slots=True)
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
 class Component:
-    glyphName: str = attr.ib()
-    transformation: Transformation = attr.ib(default=attr.Factory(
-        Transformation))
+    glyphName: str
+    transformation: Matrix3x2 = attr.Factory(Matrix3x2)
 
-    _parent: Optional[object] = attr.ib(default=None, init=False)
+    _parent: Optional[Any] = attr.ib(default=None, init=False)
     selected: bool = attr.ib(default=False, init=False)
 
     def __repr__(self):

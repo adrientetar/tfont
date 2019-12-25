@@ -1,6 +1,5 @@
 import attr
 from tfont.util.observable import ChangeType, ObservableList
-from typing import Any, Iterable, Optional, Tuple, Union
 
 
 def observable_list(parent, items):
@@ -19,27 +18,75 @@ def observable_list(parent, items):
     return ol
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, repr=False, slots=True)
+class Matrix3x2:
+    m11: float = 1
+    m12: float = 0
+    m21: float = 0
+    m22: float = 1
+    m31: float = 0
+    m32: float = 0
+
+    @classmethod
+    def create_translation(self, dx, dy):
+        return Matrix3x2(m31=dx, m32=dy)
+
+    def __bool__(self):
+        return bool(self.m12 or self.m21 or self.m31 or
+                    self.m32 or self.m11 != 1 or self.m22 != 1)
+
+    def __iter__(self):
+        yield self.m11
+        yield self.m12
+        yield self.m21
+        yield self.m22
+        yield self.m31
+        yield self.m32
+
+    def __mul__(self, other):
+        if not other:
+            return
+        self.m11, self.m12, self.m21, self.m22, self.m31, \
+            self.m32 = (
+                self.m11 * other.m11 + self.m12 * other.m21,
+                self.m11 * other.m12 + self.m12 * other.m22,
+                self.m21 * other.m11 + self.m22 * other.m21,
+                self.m21 * other.m12 + self.m22 * other.m22,
+                self.m11 * other.m31 + self.m12 * other.m32 +
+                self.m31,
+                self.m21 * other.m31 + self.m22 * other.m32 +
+                self.m32
+            )
+
+    def __repr__(self):
+        return "[%r, %r, %r, %r, %r, %r]" % tuple(self)
+
+    def transform(self, x, y):
+        return x * self.m11 + y * self.m21 + self.m31, \
+               y * self.m22 + x * self.m12 + self.m32
+
+
+@attr.s(auto_attribs=True, slots=True)
 class AlignmentZone:
-    position: int = attr.ib()
-    size: int = attr.ib()
+    position: int
+    size: int
 
     def __iter__(self):
         yield self.position
         yield self.size
 
 
-@attr.s(repr=False, slots=True)
+@attr.s(auto_attribs=True, repr=False, slots=True)
 class Rectangle:
-    x: float = attr.ib(default=0)
-    y: float = attr.ib(default=0)
-    _width: float = attr.ib(default=0)
-    _height: float = attr.ib(default=0)
+    x: float = 0
+    y: float = 0
+    _width: float = 0
+    _height: float = 0
 
     def __attrs_post_init__(self):
-        if (self._width < 0):
+        if self._width < 0:
             raise ValueError(f"width cannot be negative ('{self._width}')")
-        if (self._height < 0):
+        if self._height < 0:
             raise ValueError(f"height cannot be negative ('{self._height}')")
 
     @classmethod
@@ -82,19 +129,19 @@ class Rectangle:
 
     @height.setter
     def height(self, value):
-        if (value < 0):
+        if value < 0:
             raise ValueError(f"height cannot be negative ('{value}')")
         self._height = value
 
     @property
     def right(self):
-        if (self.empty):
+        if self.empty:
             return float("-inf")
         return self.x + self._width
 
     @property
     def top(self):
-        if (self.empty):
+        if self.empty:
             return float("-inf")
         return self.y + self._height
 
@@ -104,12 +151,12 @@ class Rectangle:
 
     @width.setter
     def width(self, value):
-        if (value < 0):
+        if value < 0:
             raise ValueError(f"width cannot be negative ('{value}')")
         self._width = value
 
     def union(self, rectangle):
-        if (self.empty):
+        if self.empty:
             self.x = rectangle.x
             self.y = rectangle.y
             self._width = rectangle.width
@@ -127,61 +174,3 @@ class Rectangle:
 
     def unionPt(self, x, y):
         self.union(Rectangle(x, y))
-
-
-@attr.s(repr=False, slots=True)
-class Transformation:
-    xScale: Union[int, float] = attr.ib(default=1)
-    xyScale: Union[int, float] = attr.ib(default=0)
-    yxScale: Union[int, float] = attr.ib(default=0)
-    yScale: Union[int, float] = attr.ib(default=1)
-    xOffset: Union[int, float] = attr.ib(default=0)
-    yOffset: Union[int, float] = attr.ib(default=0)
-
-    _parent: Optional[Any] = attr.ib(cmp=False, default=None, init=False)
-
-    def __bool__(self):
-        return bool(self.xyScale or self.yxScale or self.xOffset or
-                    self.yOffset or self.xScale != 1 or self.yScale != 1)
-
-    def __iter__(self):
-        yield self.xScale
-        yield self.xyScale
-        yield self.yxScale
-        yield self.yScale
-        yield self.xOffset
-        yield self.yOffset
-
-    def __repr__(self):
-        return "%s(%r, %r, %r, %r, %r, %r)" % (self.__class__.__name__, *self)
-
-    def concat(self, other) -> None:
-        if not other:
-            return
-        self.xScale, self.xyScale, self.yxScale, self.yScale, self.xOffset, \
-            self.yOffset = (
-                self.xScale * other.xScale + self.xyScale * other.yxScale,
-                self.xScale * other.xyScale + self.xyScale * other.yScale,
-                self.yxScale * other.xScale + self.yScale * other.yxScale,
-                self.yxScale * other.xyScale + self.yScale * other.yScale,
-                self.xScale * other.xOffset + self.xyScale * other.yOffset +
-                self.xOffset,
-                self.yxScale * other.xOffset + self.yScale * other.yOffset +
-                self.yOffset
-            )
-
-    def transform(self, x: int, y: int) -> Tuple[int, int]:
-        return x * self.xScale + y * self.yxScale + self.xOffset, \
-               y * self.yScale + x * self.xyScale + self.yOffset
-
-    def transformSequence(self, sequence: Iterable,
-                          selectionOnly: bool = False) -> bool:
-        changed = False
-        for element in sequence:
-            doTransform = not selectionOnly or element.selected
-            changed |= doTransform
-            if doTransform:
-                x, y = element.x, element.y
-                element.x = x * self.xScale + y * self.yxScale + self.xOffset
-                element.y = y * self.yScale + x * self.xyScale + self.yOffset
-        return changed

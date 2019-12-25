@@ -1,14 +1,14 @@
 import attr
-from typing import Optional, Union
+from typing import Any, Optional
 
 
-@attr.s(cmp=False, repr=False, slots=True)
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
 class Anchor:
-    x: Union[int, float] = attr.ib()
-    y: Union[int, float] = attr.ib()
-    name: str = attr.ib()
+    x: float
+    y: float
+    name: str
 
-    _parent: Optional[object] = attr.ib(default=None, init=False)
+    _parent: Optional[Any] = attr.ib(default=None, init=False)
     selected: bool = attr.ib(default=False, init=False)
 
     def __repr__(self):

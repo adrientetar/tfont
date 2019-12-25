@@ -2,31 +2,31 @@ import attr
 from tfont.objects.anchor import Anchor
 from tfont.objects.component import Component
 from tfont.objects.guideline import Guideline
-from tfont.objects.misc import Transformation, observable_list
+from tfont.objects.misc import Matrix3x2, observable_list
 from tfont.objects.path import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 
-@attr.s(cmp=False, repr=False, slots=True)
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
 class Layer:
-    masterName: str = attr.ib(default="")
-    _name: str = attr.ib(default="")
-    location: Optional[Dict[str, int]] = attr.ib(default=None)
+    masterName: str = ""
+    name: str = ""
+    location: Optional[Dict[str, int]] = None
 
-    width: Union[int, float] = attr.ib(default=600)
+    width: Union[int, float] = 600
     # should default to ascender+descender and only be stored if different from
     # that value -- add a None value for it and a property?
-    height: Union[int, float] = attr.ib(default=0)
-    yOrigin: Optional[Union[int, float]] = attr.ib(default=None)
+    height: Union[int, float] = 0
+    yOrigin: Optional[Union[int, float]] = None
 
-    _anchors: List[Anchor] = attr.ib(default=attr.Factory(list))
-    _components: List[Component] = attr.ib(default=attr.Factory(list))
-    _guidelines: List[Guideline] = attr.ib(default=attr.Factory(list))
-    _paths: List[Path] = attr.ib(default=attr.Factory(list))
+    _anchors: List[Anchor] = attr.Factory(list)
+    _components: List[Component] = attr.Factory(list)
+    _guidelines: List[Guideline] = attr.Factory(list)
+    _paths: List[Path] = attr.Factory(list)
 
     # Color format: RGBA8888.
-    color: Optional[Tuple[int, int, int, int]] = attr.ib(default=None)
-    _extraData: Optional[Dict] = attr.ib(default=None)
+    color: Optional[Tuple[int, int, int, int]] = None
+    _extraData: Optional[Dict] = None
 
     _parent: Optional[Any] = attr.ib(default=None, init=False)
 
@@ -52,7 +52,7 @@ class Layer:
         except AttributeError:
             more = ""
         return "%s(%r, %d paths%s)" % (
-            self.__class__.__name__, self.name, len(self._paths), more)
+            self.__class__.__name__, self.displayName, len(self._paths), more)
 
     @property
     def anchors(self):
@@ -85,6 +85,12 @@ class Layer:
         return observable_list(self, self._components)
 
     @property
+    def displayName(self):
+        if self.masterLayer:
+            return self.master.name
+        return self._name
+
+    @property
     def extraData(self):
         extraData = self._extraData
         if extraData is None:
@@ -108,7 +114,7 @@ class Layer:
         if bounds is None:
             return
         delta = value - bounds[0]
-        self.transform(Transformation(xOffset=delta))
+        self.transform(Matrix3x2.create_translation(delta, 0))
         self.width += delta
 
     @property
@@ -122,16 +128,6 @@ class Layer:
     @property
     def masterLayer(self):
         return self.masterName and not self._name
-
-    @property
-    def name(self):
-        if self.masterLayer:
-            return self.master.name
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        self._name = value
 
     @property
     def parent(self):
@@ -180,3 +176,18 @@ class Layer:
             oldValue += self.height
         self.yOrigin = top + value
         self.height += value - oldValue
+
+    def transform(self, matrix, selectionOnly=False):
+        for anchor in self._anchors:
+            if not selectionOnly or anchor.selected:
+                anchor.x, \
+                anchor.y = matrix.transform(anchor.x, anchor.y)
+        for component in self._components:
+            if not selectionOnly or component.selected:
+                component.transformation *= matrix
+        for guideline in self._guidelines:
+            if not selectionOnly or guideline.selected:
+                guideline.x, \
+                guideline.y = matrix.transform(guideline.x, guideline.y)
+        for path in self._paths:
+            path.transform(matrix, selectionOnly)

@@ -6,7 +6,7 @@ from tfont.objects.font import Font
 from tfont.objects.glyph import Glyph
 from tfont.objects.layer import Layer
 from tfont.objects.guideline import Guideline
-from tfont.objects.misc import AlignmentZone, Transformation
+from tfont.objects.misc import AlignmentZone, Matrix3x2
 from tfont.objects.path import Path
 from typing import Union
 
@@ -156,7 +156,7 @@ class UFOConverter(cattr.Converter):
                 for c in g.components:
                     component = Component(c.baseGlyph)
                     if c.transformation:
-                        component.transformation = Transformation(
+                        component.transformation = Matrix3x2(
                             *tuple(c.transformation)
                         )
                     # ufo identifier is skipped

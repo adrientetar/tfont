@@ -19,7 +19,7 @@ from tfont2ft.types import Context
 
 
 def otRoundSequence(iterable):
-    return list(map(lambda v: otRound(v), iterable))
+    return list(map(otRound, iterable))
 
 
 class BaseFontCompiler:
@@ -48,6 +48,8 @@ class BaseFontCompiler:
         self.build_cmap()
         self.build_OS2()
         self.build_post()
+
+        # TODO: GPOS, GSUB
 
         self.build_others()
 
@@ -145,9 +147,8 @@ class BaseFontCompiler:
         self.otf["hhea"] = hhea = ttLib.newTable("hhea")
         hhea.tableVersion = 0x00010000
 
-        # TODO: rename to ascender/descender
-        hhea.ascent, \
-        hhea.descent, \
+        hhea.ascender, \
+        hhea.descender, \
         hhea.lineGap = otRoundSequence(data.hhea_metrics(ctx))
         hhea.caretSlopeRise, \
         hhea.caretSlopeRun, \
@@ -320,9 +321,7 @@ class BaseFontCompiler:
         os2.usBreakChar = 32
         os2.usDefaultChar = 0
         # maximum contextual lookup length
-        os2.usMaxContex = 0
-
-        print(os2)
+        os2.usMaxContext = 0
 
     def build_post(self):
         ctx = self.ctx

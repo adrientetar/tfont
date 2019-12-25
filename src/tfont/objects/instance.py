@@ -7,18 +7,18 @@ from typing import Any, Dict, Optional
 # api to convert an instance into a master?
 
 
-@attr.s(cmp=False, repr=False, slots=True)
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
 class Instance:
-    familyName: str = attr.ib(default="")
-    styleName: str = attr.ib(default="")
-    location: Dict[str, int] = attr.ib(default=attr.Factory(dict))
+    familyName: str = ""
+    styleName: str = ""
+    location: Dict[str, int] = attr.Factory(dict)
 
-    bold: bool = attr.ib(default=False)
-    italic: bool = attr.ib(default=False)
-    preferredFamilyName: str = attr.ib(default="")
-    preferredSubfamilyName: str = attr.ib(default="")
-    postscriptFontName: str = attr.ib(default="")
-    postscriptFullName: str = attr.ib(default="")
+    bold: bool = False
+    italic: bool = False
+    preferredFamilyName: str = ""
+    preferredSubfamilyName: str = ""
+    postscriptFontName: str = ""
+    postscriptFullName: str = ""
 
     _parent: Optional[Any] = attr.ib(default=None, init=False)
 

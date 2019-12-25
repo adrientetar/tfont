@@ -1,15 +1,15 @@
 import attr
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 
-@attr.s(cmp=False, repr=False, slots=True)
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
 class Point:
-    x: Union[int, float] = attr.ib()
-    y: Union[int, float] = attr.ib()
-    type: Optional[str] = attr.ib(default=None)
-    smooth: bool = attr.ib(default=False)
+    x: float
+    y: float
+    type: Optional[str] = None
+    smooth: bool = False
 
-    _extraData: Optional[Dict] = attr.ib(default=None)
+    _extraData: Optional[Dict] = None
 
     _parent: Optional[Any] = attr.ib(default=None, init=False)
     selected: bool = attr.ib(default=False, init=False)

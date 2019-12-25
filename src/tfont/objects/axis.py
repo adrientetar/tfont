@@ -1,21 +1,21 @@
 import attr
-from typing import Optional
+from typing import Any, Optional
 
 
-@attr.s(cmp=False, repr=False, slots=True)
+@attr.s(auto_attribs=True, cmp=False, repr=False, slots=True)
 class Axis:
-    tag: str = attr.ib(default="")
-    min: int = attr.ib(default=0)
-    max: int = attr.ib(default=0)
-    default: int = attr.ib(default=0)
-    name: str = attr.ib(default="")
+    tag: str
+    min: int = 0
+    max: int = 0
+    default: int = 0
+    name: str = ""
 
-    _parent: Optional[object] = attr.ib(default=None, init=False)
+    _parent: Optional[Any] = attr.ib(default=None, init=False)
 
     def __repr__(self):
         return "%s(%r, [%d:%d:%d])" % (
-            self.__class__.__name__, self.tag, self.minimum, self.default,
-            self.maximum)
+            self.__class__.__name__, self.tag, self.min, self.default,
+            self.max)
 
     @property
     def parent(self):

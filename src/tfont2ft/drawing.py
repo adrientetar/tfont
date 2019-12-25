@@ -3,6 +3,17 @@
 def draw_layer(layer, pen):
     for path in layer.paths:
         draw_path(path, pen)
+    for component in layer.components:
+        draw_component(component, pen)
+
+#
+
+
+def draw_component(component, pen):
+    pen.addComponent(
+        component.glyphName,
+        tuple(component.transformation)
+    )
 
 
 def draw_path(path, pen):
