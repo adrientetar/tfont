@@ -193,7 +193,7 @@ class UFOConverter(cattr.Converter):
         return font
 
     def save(self, font, path):
-        pass
+        raise NotImplementedError
 
     def structure_attrs_fromdict(self, obj, cl):
         conv_obj = obj.copy()  # Dict of converted parameters.

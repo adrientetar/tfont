@@ -7,15 +7,15 @@ class Context:
         self._font = font
         self._master = master
         self._log = []
-    
+
     @property
     def log(self):
         return self._log
-    
+
     @property
     def font(self):
         return self._font
-    
+
     @property
     def master(self):
         return self._master

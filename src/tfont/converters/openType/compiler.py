@@ -13,9 +13,9 @@ from fontTools.misc.fixedTools import otRound
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.ttLib.tables._c_m_a_p import cmap_format_4, cmap_format_12
 from fontTools.ttLib.tables.O_S_2f_2 import Panose
-from tfont2ft import conversion, drawing, semlog
-from tfont2ft.fontdata import FontData, FontProc
-from tfont2ft.types import Context
+from tfont.converters.openType import conversion, drawing, semlog
+from tfont.converters.openType.fontdata import FontData, FontProc
+from tfont.converters.openType.types import Context
 
 
 def otRoundSequence(iterable):

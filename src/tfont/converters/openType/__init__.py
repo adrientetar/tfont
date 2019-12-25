@@ -1,0 +1,1 @@
+from tfont.converters.openType.compiler import Type2FontCompiler

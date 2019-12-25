@@ -122,6 +122,7 @@ class TFontConverter(cattr.Converter):
         d = self.unstructure(font)
         with open(path, 'w') as file:
             json.dump(d, file, indent=self._indent)
+        return True, []
 
     def structure_attrs_fromdict(self, obj, cl):
         conv_obj = obj.copy()  # Dict of converted parameters.

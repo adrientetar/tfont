@@ -1,9 +1,9 @@
 from fontTools.cffLib.width import optimizeWidths
 from fontTools.misc.fixedTools import otRound
 import math
+from tfont.converters.openType import conversion, semlog
 from tfont.objects import Glyph, Layer, Path, Point
 from tfont.objects.misc import Rectangle
-from tfont2ft import conversion, semlog
 
 
 def rect_otRound(rectangle):
@@ -482,7 +482,7 @@ class FontData:
         layer = cls.glyph_layer(ctx, glyph)
 
         return cls.layer_width(ctx, layer)
-    
+
     @classmethod
     def layer_width(cls, ctx, layer):
         width = layer.width
