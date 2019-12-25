@@ -13,7 +13,7 @@ from fontTools.misc.fixedTools import otRound
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.ttLib.tables._c_m_a_p import cmap_format_4, cmap_format_12
 from fontTools.ttLib.tables.O_S_2f_2 import Panose
-from tfont2ft import conversion, drawing
+from tfont2ft import conversion, drawing, semlog
 from tfont2ft.fontdata import FontData, FontProc
 from tfont2ft.types import Context
 
@@ -53,7 +53,7 @@ class BaseFontCompiler:
 
         self.build_others()
 
-        return (self.otf, self.ctx.output, self.ctx.errors)
+        return (self.otf, self.ctx.log)
 
     ##
 
@@ -176,8 +176,8 @@ class BaseFontCompiler:
                     secondSideBearings.append(secondSideBearing)
                     extents.append(extent)
         else:
-            ctx.warning(
-                "hmtx table was missing when building hhea!"
+            ctx.log.append(
+                semlog.warning_missing_hmtx(target="hhea")
             )
 
         hhea.advanceWidthMax = max(advances) if advances else 0
@@ -400,20 +400,14 @@ class Type2FontCompiler(BaseFontCompiler):
         topDict.version = data.version(ctx)
         topDict.Notice = conversion.to_postscript_string(
             data.name_trademark(ctx),
-            # TBH, logging should just be about semantic kv pairs
-            # similar to how exceptions work
-            lambda name: ctx.warning(
-                "The trademark was normalized for storage in the "
-                "CFF table and consequently some characters were "
-                f"dropped: '{name}'",
+            lambda result: ctx.log.append(
+                semlog.warning_attr_truncated(attr="trademark", result=result)
             )
         )
         topDict.Copyright = conversion.to_postscript_string(
             data.copyright(ctx),
-            lambda name: ctx.warning(
-                "The copyright was normalized for storage in the "
-                "CFF table and consequently some characters were "
-                f"dropped: '{name}'",
+            lambda result: ctx.log.append(
+                semlog.warning_attr_truncated(attr="copyright", result=result)
             )
         )
         topDict.FullName = data.name_postscriptFullName(ctx)
@@ -473,20 +467,12 @@ class Type2FontCompiler(BaseFontCompiler):
         for glyphName in self.glyphOrder:
             glyph = self.glyphMap[glyphName]
             charString = self.draw_charstring(glyph, private, globalSubrs)
+
             # add to the font
-            if glyphName in charStrings:
-                ctx.error(
-                    f"The glyph '{glyphName}' was already present in the CFF table. "
-                    "Duplicate?"
-                )
-                # overwrite
-                glyphID = charStrings.charStrings[glyphName]
-                charStringsIndex.items[glyphID] = charString
-            else:
-                charStringsIndex.append(charString)
-                glyphID = len(topDict.charset)
-                charStrings.charStrings[glyphName] = glyphID
-                topDict.charset.append(glyphName)
+            charStringsIndex.append(charString)
+            glyphID = len(topDict.charset)
+            charStrings.charStrings[glyphName] = glyphID
+            topDict.charset.append(glyphName)
         bounds = self.fontBounds
         topDict.FontBBox = (bounds.left, bounds.bottom, bounds.right, bounds.top)
 

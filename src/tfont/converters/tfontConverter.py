@@ -2,7 +2,7 @@ import cattr
 from collections.abc import Collection
 from datetime import datetime
 import rapidjson as json
-from rapidjson import RawJSON, dumps
+from rapidjson import RawJSON
 from tfont.objects.font import Font
 from tfont.objects.layer import Layer
 from tfont.objects.misc import AlignmentZone, Matrix3x2
@@ -45,7 +45,7 @@ def _unstructure_Path(path):
         extraData = point._extraData
         if extraData:
             value += (extraData,)
-        data.append(RawJSON(dumps(value)))
+        data.append(RawJSON(json.dumps(value)))
     if path._extraData:
         data.append(path._extraData)
     return data
@@ -93,7 +93,7 @@ class TFontConverter(cattr.Converter):
         if indent is None:
             unstructure_seq = lambda o: tuple(o)
         else:
-            unstructure_seq = lambda o: RawJSON(dumps(tuple(o)))
+            unstructure_seq = lambda o: RawJSON(json.dumps(tuple(o)))
             self.register_unstructure_hook(tuple, unstructure_seq)
         # Alignment zone
         self.register_structure_hook(AlignmentZone, structure_seq)

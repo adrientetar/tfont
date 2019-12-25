@@ -1,18 +1,16 @@
-import io
 
 
 class Context:
-    __slots__ = ("_font", "_master", "_errors", "_output")
+    __slots__ = ("_font", "_master", "_log")
 
     def __init__(self, font, master):
         self._font = font
         self._master = master
-        self._errors = io.StringIO()
-        self._output = io.StringIO()
+        self._log = []
     
     @property
-    def errors(self):
-        return self._errors.getvalue()
+    def log(self):
+        return self._log
     
     @property
     def font(self):
@@ -21,13 +19,3 @@ class Context:
     @property
     def master(self):
         return self._master
-    
-    @property
-    def output(self):
-        return self._output.getvalue()
-    
-    def error(self, msg):
-        self._errors.write(f"{msg}\n")
-    
-    def warning(self, msg):
-        self._output.write(f"Warning: {msg}\n")

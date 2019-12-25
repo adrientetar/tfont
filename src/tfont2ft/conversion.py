@@ -14,11 +14,14 @@ def _filter_string(string, try_writec, logging_callback):
 
     value = result.getvalue()
     if logging_callback is not None and value != string:
-        # use kv pairs!!
-        logging_callback(string)
+        logging_callback(value)
     return value
 
 #
+
+
+def from_codepoint(codepoint):
+    return f"{codepoint:04X}"
 
 
 def to_bitflags(indices, start, length):
@@ -28,6 +31,10 @@ def to_bitflags(indices, start, length):
         if start <= ix < end:
             value |= 1 << ix
     return value
+
+
+def to_codepoint(unicode):
+    return int(unicode, 16)
 
 
 def to_opentype_timestamp(datetime, logging_callback=None):

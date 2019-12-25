@@ -3,7 +3,7 @@ from fontTools.misc.fixedTools import otRound
 import math
 from tfont.objects import Glyph, Layer, Path, Point
 from tfont.objects.misc import Rectangle
-from tfont2ft import conversion
+from tfont2ft import conversion, semlog
 
 
 def rect_otRound(rectangle):
@@ -85,9 +85,8 @@ class FontData:
         # https://www.microsoft.com/typography/otspec/recom.htm
         actualVersionMinor = versionMinor.zfill(3)[:3]
         if len(versionMinor) > 3:
-            ctx.warning(
-                f"Minor version has too many digits and won't fit into the "
-                f"head table fontRevision field; rounded to {actualVersionMinor}."
+            ctx.log.append(
+                semlog.warning_attr_truncated(attr="versionMinor", result=actualVersionMinor)
             )
         return f"{font.versionMajor}.{actualVersionMinor}"
 
@@ -489,7 +488,9 @@ class FontData:
         width = layer.width
 
         if width < 0:
-            ctx.error(f"Expected positive width ('{width}') in glyph '{glyph.name}'")
+            ctx.log.append(
+                semlog.error_negative_width(name=glyph.name, width=width)
+            )
             return 0
         return width
 
@@ -517,8 +518,8 @@ class FontProc:
             if widths:
                 return otRound(sum(widths) / len(widths))
         else:
-            ctx.warning(
-                f"Missing 'hmtx' table, couldn't compute avgCharWidth"
+            ctx.log.append(
+                semlog.warning_missing_hmtx(target="avgCharWidth")
             )
         return 0
 
@@ -653,8 +654,8 @@ class FontProc:
             widths = [m[0] for m in hmtx.metrics.values()]
             return optimizeWidths(widths)
         else:
-            ctx.warning(
-                f"Missing 'hmtx' table, couldn't compute defaultWidthX/nominalWidthX"
+            ctx.log.append(
+                semlog.warning_missing_hmtx(target="defaultWidthX/nominalWidthX")
             )
         return 0, 0
 
@@ -677,13 +678,16 @@ class FontProc:
         cmap = {}
         for glyphName, glyph in glyphMap.items():
             unicodes = glyph.unicodes
-            for uni in map(lambda unistr: int(unistr, 16), unicodes):
-                if uni in cmap:
-                    ctx.error(
-                        f"Cannot map '{glyphName}' to U+{uni:04X}, already mapped to "
-                        f"'{cmap[uni]}'"
+            for cp in map(conversion.to_codepoint, unicodes):
+                if cp in cmap:
+                    ctx.log.append(
+                        semlog.error_duplicate_encoding(
+                            name=glyphName,
+                            unicode=conversion.from_codepoint(cp),
+                            oldName=cmap[cp],
+                        )
                     )
-                cmap[uni] = glyphName
+                cmap[cp] = glyphName
         return cmap
 
 
