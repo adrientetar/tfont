@@ -28,22 +28,14 @@ class Matrix3x2:
     m32: float = 0
 
     @classmethod
-    def create_translation(self, dx, dy):
-        return Matrix3x2(m31=dx, m32=dy)
+    def create_translation(cls, dx, dy):
+        return cls(m31=dx, m32=dy)
 
     def __bool__(self):
         return bool(self.m12 or self.m21 or self.m31 or
                     self.m32 or self.m11 != 1 or self.m22 != 1)
 
-    def __iter__(self):
-        yield self.m11
-        yield self.m12
-        yield self.m21
-        yield self.m22
-        yield self.m31
-        yield self.m32
-
-    def __mul__(self, other):
+    def __imul__(self, other):
         if not other:
             return
         self.m11, self.m12, self.m21, self.m22, self.m31, \
@@ -57,6 +49,20 @@ class Matrix3x2:
                 self.m21 * other.m31 + self.m22 * other.m32 +
                 self.m32
             )
+        return self
+
+    def __iter__(self):
+        yield self.m11
+        yield self.m12
+        yield self.m21
+        yield self.m22
+        yield self.m31
+        yield self.m32
+
+    def __mul__(self, other):
+        mat = self.__class__(*self)
+        mat *= other
+        return mat
 
     def __repr__(self):
         return "[%r, %r, %r, %r, %r, %r]" % tuple(self)
