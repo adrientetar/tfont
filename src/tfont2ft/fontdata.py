@@ -307,13 +307,18 @@ class FontData:
     def OS2_fsSelection(cls, ctx):
         selection = 0
         styleMapStyleName = cls.stylemap_styleName(ctx)
+        useTypoMetrics = cls.OS2_useTypoMetrics(ctx)
+
         if styleMapStyleName == "regular":
             selection |= 1 << 6
         else:
             if styleMapStyleName.startswith("bold"):
                 selection |= 1 << 5
-            if styleMapStyleName == "italic":
+            if styleMapStyleName.endswith("italic"):
                 selection |= 1 << 0
+        if useTypoMetrics:
+            selection |= 1 << 7
+
         return selection
 
     @classmethod
@@ -399,6 +404,11 @@ class FontData:
     def OS2_unicodeRanges(cls, ctx):
         return None
 
+    # part of OS2_fsSelection
+    @classmethod
+    def OS2_useTypoMetrics(cls, ctx):
+        return True
+
     @classmethod
     def OS2_vendorID(cls, ctx):
         return "UKWN"
@@ -408,12 +418,15 @@ class FontData:
         return 400
 
     @classmethod
-    def OS2_winMetrics(cls, ctx):
+    def OS2_winMetrics(cls, ctx, font_bounds):
         typoAscender, \
         typoDescender, \
         typoLineGap = cls.OS2_typoMetrics(ctx)
 
-        return typoAscender, -typoDescender
+        return (
+            max(typoAscender, font_bounds.top),
+            abs(min(typoDescender, font_bounds.bottom))
+        )
 
     @classmethod
     def OS2_widthClass(cls, ctx):

@@ -312,7 +312,7 @@ class BaseFontCompiler:
         os2.sTypoDescender, \
         os2.sTypoLineGap = otRoundSequence(data.OS2_typoMetrics(ctx))
         os2.usWinAscent, \
-        os2.usWinDescent = otRoundSequence(data.OS2_winMetrics(ctx))
+        os2.usWinDescent = otRoundSequence(data.OS2_winMetrics(ctx, self.fontBounds))
 
         os2.fsSelection = data.OS2_fsSelection(ctx)
 

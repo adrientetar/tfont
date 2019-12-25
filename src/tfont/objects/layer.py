@@ -88,7 +88,7 @@ class Layer:
     def displayName(self):
         if self.masterLayer:
             return self.master.name
-        return self._name
+        return self.name
 
     @property
     def extraData(self):
@@ -127,7 +127,7 @@ class Layer:
 
     @property
     def masterLayer(self):
-        return self.masterName and not self._name
+        return self.masterName and not self.name
 
     @property
     def parent(self):

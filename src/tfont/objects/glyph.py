@@ -66,7 +66,7 @@ class Glyph:
             name = master.name
         layers = self._layers
         for layer in layers:
-            if not layer._name and layer.masterName == name:
+            if layer.masterLayer and layer.masterName == name:
                 return layer
         layer = Layer(masterName=name)
         layer._parent = self
