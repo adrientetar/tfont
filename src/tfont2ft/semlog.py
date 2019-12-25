@@ -5,7 +5,14 @@ def error_duplicate_encoding(name, unicode, oldName):
         text="U+{unicode} in glyph '{name}' is already mapped to '{oldName}'",
         name=name,
         unicode=unicode,
-        oldName=oldName
+        oldName=oldName,
+    )
+
+
+def error_duplicate_glyphs(duplicates):
+    return _error(
+        text="Glyph names '{duplicates}' appear multiple times in the font",
+        duplicates=duplicates,
     )
 
 

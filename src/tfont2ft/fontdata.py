@@ -587,7 +587,7 @@ class FontProc:
                 codepageRanges.add(30)  # OEM Character Set
             # TODO: Symbol bit has a special meaning (check the spec), we need
             # to confirm if this is wanted by default.
-            # elif unichr(0xF000) <= char <= unichr(0xF0FF):
+            # elif chr(0xF000) <= char <= chr(0xF0FF):
             #    codepageRanges.add(31)          # Symbol Character Set
             elif char == "þ" and hasAscii and hasLineart:
                 codepageRanges.add(54)  # MS-DOS Icelandic
@@ -664,6 +664,18 @@ class FontProc:
         font = ctx.font
 
         glyphs = {glyph.name: glyph for glyph in font.glyphs}
+        if len(glyphs) < len(font.glyphs):
+            duplicates = []
+            glyphNames = set()
+
+            for glyph in font.glyphs:
+                if glyph.name in glyphNames:
+                    duplicates.append(glyph.name)
+                glyphNames.add(glyph.name)
+            assert(len(duplicates))
+            ctx.log.append(
+                semlog.error_duplicate_glyphs(duplicates=duplicates)
+            )
         if ".notdef" not in glyphs:
             glyphs[".notdef"] = FontProc.make_notdef(ctx)
 
