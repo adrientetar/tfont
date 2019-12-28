@@ -672,7 +672,7 @@ class FontProc:
                 if glyph.name in glyphNames:
                     duplicates.append(glyph.name)
                 glyphNames.add(glyph.name)
-            assert(len(duplicates))
+            assert len(duplicates)
             ctx.log.append(
                 semlog.error_duplicate_glyphs(duplicates=duplicates)
             )

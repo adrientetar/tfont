@@ -2,6 +2,7 @@ from tfont.converters.openType import Type2FontCompiler
 
 
 class Type2Converter:
+    __slots__ = "_kwargs"
 
     def __init__(self, **kwargs):
         self._kwargs = kwargs
